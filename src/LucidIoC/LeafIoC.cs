@@ -11,14 +11,7 @@ namespace gar3t.LucidIoC
 		public static void Configure<TInterface, TImplementation>() where TImplementation : TInterface, new()
 		{
 			var type = typeof(TInterface);
-//			if (!Configuration.ContainsKey(type))
-//			{
-//				Configuration.Add(type, (Func<TInterface>)(() => new TImplementation()));
-//			}
-//			else
-//			{
-				Configuration[type] = (Func<TInterface>)(() => new TImplementation());
-//			}
+			Configuration[type] = (Func<TInterface>)(() => new TImplementation());
 		}
 
 		public static TInterface GetInstance<TInterface>()
