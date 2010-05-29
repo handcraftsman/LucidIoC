@@ -68,12 +68,6 @@ namespace gar3t.LucidIoC.Tests
 			private Action _configure;
 			private Type _expectedType;
 
-			[SetUp]
-			public void BeforeEachTest()
-			{
-				LeafIoC.Reset();
-			}
-
 			[Test]
 			public void Given_a_type_that_has_already_been_configured()
 			{
@@ -138,6 +132,7 @@ namespace gar3t.LucidIoC.Tests
 					.When(asked_to_get_an_instance)
 					.With(a_type_that_has_been_configured)
 					.Should(get_a_non_null_instance)
+					.Should(get_a_different_instance_every_time)
 					.Verify();
 			}
 
@@ -170,6 +165,13 @@ namespace gar3t.LucidIoC.Tests
 			private void get_a_non_null_instance()
 			{
 				_result.ShouldNotBeNull();
+			}
+
+			private void get_a_different_instance_every_time()
+			{
+				_result.ShouldNotBeNull();
+				var other = _getInstance();
+				ReferenceEquals(_result,other).ShouldBeFalse();
 			}
 		}
 
