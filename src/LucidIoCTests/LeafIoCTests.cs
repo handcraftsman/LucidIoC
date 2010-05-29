@@ -137,6 +137,17 @@ namespace gar3t.LucidIoC.Tests
 			}
 
 			[Test]
+			public void Given_a_type_that_has_been_configured_as_a_singleton()
+			{
+				Test.Static()
+					.When(asked_to_get_an_instance)
+					.With(a_type_that_has_been_configured_as_a_singleton)
+					.Should(get_a_non_null_instance)
+					.Should(get_the_same_instance_every_time)
+					.Verify();
+			}
+
+			[Test]
 			public void Given_a_type_that_has_not_been_configured()
 			{
 				Test.Static()
@@ -152,6 +163,13 @@ namespace gar3t.LucidIoC.Tests
 				_getInstance = () => LeafIoC.GetInstance<IComparable>();
 			}
 
+			private void a_type_that_has_been_configured_as_a_singleton()
+			{
+				LeafIoC.Configure<IComparable, Int32>()
+					.AsSingleton();
+				_getInstance = () => LeafIoC.GetInstance<IComparable>();
+			}
+
 			private void a_type_that_has_not_been_configured()
 			{
 				_getInstance = () => LeafIoC.GetInstance<IDisposable>();
@@ -162,22 +180,30 @@ namespace gar3t.LucidIoC.Tests
 				_result = _getInstance();
 			}
 
+			private void get_a_different_instance_every_time()
+			{
+				_result.ShouldNotBeNull();
+				var other = _getInstance();
+				ReferenceEquals(_result, other).ShouldBeFalse();
+			}
+
 			private void get_a_non_null_instance()
 			{
 				_result.ShouldNotBeNull();
 			}
 
-			private void get_a_different_instance_every_time()
+			private void get_the_same_instance_every_time()
 			{
-				_result.ShouldNotBeNull();
 				var other = _getInstance();
-				ReferenceEquals(_result,other).ShouldBeFalse();
+				ReferenceEquals(_result, other).ShouldBeTrue();
 			}
 		}
 
 		[TestFixture]
 		public class When_asked_to_reset
 		{
+			private static object _instance;
+
 			[Test]
 			public void Given_any_configured_types()
 			{
@@ -188,6 +214,45 @@ namespace gar3t.LucidIoC.Tests
 					.Verify();
 			}
 
+			[Test]
+			public void Given_instances_of_disposable_types_exist()
+			{
+				Test.Static()
+					.When(asked_to_reset)
+					.With(instances_of_disposable_types_exist)
+					.Should(dispose_of_any_disposable_instances)
+					.Should(remove_all_exising_configurations)
+					.Verify();
+			}
+
+			[Test]
+			public void Given_instances_of_non_disposable_types_exist()
+			{
+				Test.Static()
+					.When(asked_to_reset)
+					.With(instances_of_non_disposable_types_exist)
+					.Should(remove_all_exising_configurations)
+					.Verify();
+			}
+
+			public class DisposeTester : IDisposable
+			{
+				public bool Disposed { get; private set; }
+
+				public void Dispose()
+				{
+					Disposed = true;
+				}
+			}
+
+			public class NonDisposableTester : IComparable
+			{
+				public int CompareTo(object obj)
+				{
+					throw new NotImplementedException();
+				}
+			}
+
 			private static void any_types_already_configured()
 			{
 				LeafIoC.Configure<IComparable, Int32>();
@@ -196,6 +261,23 @@ namespace gar3t.LucidIoC.Tests
 			private static void asked_to_reset()
 			{
 				LeafIoC.Reset();
+			}
+
+			private static void dispose_of_any_disposable_instances()
+			{
+				((DisposeTester)_instance).Disposed.ShouldBeTrue();
+			}
+
+			private static void instances_of_disposable_types_exist()
+			{
+				LeafIoC.Configure<IDisposable, DisposeTester>().AsSingleton();
+				_instance = LeafIoC.GetInstance<IDisposable>();
+			}
+
+			private static void instances_of_non_disposable_types_exist()
+			{
+				LeafIoC.Configure<IComparable, NonDisposableTester>().AsSingleton();
+				_instance = LeafIoC.GetInstance<IComparable>();
 			}
 
 			private static void remove_all_exising_configurations()

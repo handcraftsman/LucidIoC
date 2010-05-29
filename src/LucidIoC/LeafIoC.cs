@@ -6,23 +6,55 @@ namespace gar3t.LucidIoC
 {
 	public static class LeafIoC
 	{
-		private static readonly Dictionary<Type, object> Configuration = new Dictionary<Type, object>();
+		private static readonly Dictionary<Type, ResolutionInfo> Configuration
+			= new Dictionary<Type, ResolutionInfo>();
 
-		public static void Configure<TInterface, TImplementation>() where TImplementation : TInterface, new()
+		public static ResolutionContext Configure<TInterface, TImplementation>() where TImplementation : TInterface, new()
 		{
 			var type = typeof(TInterface);
-			Configuration[type] = (Func<TInterface>)(() => new TImplementation());
+			var resolutionInfo = new ResolutionInfo
+				{
+					Initializer = (Func<TInterface>)(() => new TImplementation())
+				};
+			Configuration[type] = resolutionInfo;
+
+			return new ResolutionContext(resolutionInfo);
+		}
+
+		private static void DisposeDisposableInstances()
+		{
+			foreach (var resolutionInfo in Configuration.Values)
+			{
+				var instance = resolutionInfo.Instance as IDisposable;
+				if (instance == null)
+				{
+					continue;
+				}
+				resolutionInfo.Instance = null;
+				instance.Dispose();
+			}
 		}
 
 		public static TInterface GetInstance<TInterface>()
 		{
 			var type = typeof(TInterface);
-			object value;
-			if (!Configuration.TryGetValue(type, out value))
+			ResolutionInfo info;
+			if (!Configuration.TryGetValue(type, out info))
 			{
 				throw new ConfigurationErrorsException(string.Format("No instance of {0} has been configured.", type.FullName));
 			}
-			return ((Func<TInterface>)value)();
+
+			if (info.Instance != null)
+			{
+				return (TInterface)info.Instance;
+			}
+
+			var instance = ((Func<TInterface>)(info.Initializer)).Invoke();
+			if (info.IsSingleton)
+			{
+				info.Instance = instance;
+			}
+			return instance;
 		}
 
 		public static bool IsConfigured<TInterface>()
@@ -32,6 +64,7 @@ namespace gar3t.LucidIoC
 
 		public static void Reset()
 		{
+			DisposeDisposableInstances();
 			Configuration.Clear();
 		}
 	}
