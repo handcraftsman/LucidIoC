@@ -6,44 +6,41 @@ namespace gar3t.LucidIoC
 {
 	public static class LeafIoC
 	{
-		private static readonly Dictionary<Type, ResolutionInfo> Configuration
-			= new Dictionary<Type, ResolutionInfo>();
+		private static readonly Dictionary<Type, ConfigurationCollection> Configuration
+			= new Dictionary<Type, ConfigurationCollection>();
 
 		public static ResolutionContext Configure<TInterface, TImplementation>() where TImplementation : TInterface, new()
 		{
 			var type = typeof(TInterface);
+			var configuration = new ConfigurationCollection();
 			var resolutionInfo = new ResolutionInfo
 				{
 					Initializer = (Func<TInterface>)(() => new TImplementation())
 				};
-			Configuration[type] = resolutionInfo;
+			configuration.Store(resolutionInfo);
+			Configuration[type] = configuration;
 
 			return new ResolutionContext(resolutionInfo);
 		}
 
 		private static void DisposeDisposableInstances()
 		{
-			foreach (var resolutionInfo in Configuration.Values)
+			foreach (var configurationCollection in Configuration.Values)
 			{
-				var instance = resolutionInfo.Instance as IDisposable;
-				if (instance == null)
-				{
-					continue;
-				}
-				resolutionInfo.Instance = null;
-				instance.Dispose();
+				configurationCollection.DisposeDisposableInstances();
 			}
 		}
 
 		public static TInterface GetInstance<TInterface>()
 		{
 			var type = typeof(TInterface);
-			ResolutionInfo info;
-			if (!Configuration.TryGetValue(type, out info))
+			ConfigurationCollection configuration;
+			if (!Configuration.TryGetValue(type, out configuration))
 			{
 				throw new ConfigurationErrorsException(string.Format("No instance of {0} has been configured.", type.FullName));
 			}
 
+			var info = configuration.Get();
 			if (info.Instance != null)
 			{
 				return (TInterface)info.Instance;

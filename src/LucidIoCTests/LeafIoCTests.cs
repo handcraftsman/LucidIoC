@@ -119,6 +119,22 @@ namespace gar3t.LucidIoC.Tests
 			}
 		}
 
+//[TestFixture]
+//public class When_asked_to_get_a_named_object_instance
+//{
+//	[Test]
+//	public void Given_a_name_that_has_been_configured()
+//	{
+//		Test.Static()
+//			.When(asked_to_get_a_named_instance)
+//			.With(a_name_that_has_been_configured)
+//			.Should(get_a_non_null_instance)
+//			.Should(get_the_instance_requested)
+//			.Should(get_a_different_instance_every_time)
+//			.Verify();
+//	}
+//}
+
 		[TestFixture]
 		public class When_asked_to_get_an_object_instance
 		{
@@ -233,24 +249,6 @@ namespace gar3t.LucidIoC.Tests
 					.With(instances_of_non_disposable_types_exist)
 					.Should(remove_all_exising_configurations)
 					.Verify();
-			}
-
-			public class DisposeTester : IDisposable
-			{
-				public bool Disposed { get; private set; }
-
-				public void Dispose()
-				{
-					Disposed = true;
-				}
-			}
-
-			public class NonDisposableTester : IComparable
-			{
-				public int CompareTo(object obj)
-				{
-					throw new NotImplementedException();
-				}
 			}
 
 			private static void any_types_already_configured()
