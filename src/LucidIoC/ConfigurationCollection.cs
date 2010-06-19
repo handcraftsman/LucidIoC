@@ -12,19 +12,29 @@ namespace gar3t.LucidIoC
 		{
 			foreach (var configuration in _configurations)
 			{
-				var instance = configuration.Instance as IDisposable;
-				configuration.Instance = null;
-				if (instance == null)
-				{
-					continue;
-				}
-				instance.Dispose();
+				DisposeInstance(configuration);
 			}
+		}
+
+		private static void DisposeInstance(ResolutionInfo configuration)
+		{
+			var instance = configuration.Instance as IDisposable;
+			configuration.Instance = null;
+			if (instance == null)
+			{
+				return;
+			}
+			instance.Dispose();
 		}
 
 		public ResolutionInfo Get()
 		{
-			return _configurations.FirstOrDefault();
+			return _configurations.SingleOrDefault(x => x.Name == null) ?? _configurations.Single();
+		}
+
+		public ResolutionInfo Get(string name)
+		{
+			return _configurations.Single(x => x.Name == name);
 		}
 
 		public bool HasConfiguration()
@@ -34,8 +44,17 @@ namespace gar3t.LucidIoC
 
 		public void Store(ResolutionInfo configuration)
 		{
-			_configurations.Clear();
-			_configurations.Add(configuration);
+			var match = _configurations.FirstOrDefault(x => x.Name == configuration.Name);
+			if (match == null)
+			{
+				_configurations.Add(configuration);
+			}
+			else
+			{
+				int index = _configurations.IndexOf(match);
+				_configurations[index] = configuration;
+				DisposeInstance(match);
+			}
 		}
 	}
 }

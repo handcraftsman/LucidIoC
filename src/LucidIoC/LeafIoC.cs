@@ -12,7 +12,11 @@ namespace gar3t.LucidIoC
 		public static ResolutionContext Configure<TInterface, TImplementation>() where TImplementation : TInterface, new()
 		{
 			var type = typeof(TInterface);
-			var configuration = new ConfigurationCollection();
+			ConfigurationCollection configuration;
+			if (!Configuration.TryGetValue(type, out configuration))
+			{
+				configuration = new ConfigurationCollection();
+			}
 			var resolutionInfo = new ResolutionInfo
 				{
 					Initializer = (Func<TInterface>)(() => new TImplementation())
@@ -33,14 +37,19 @@ namespace gar3t.LucidIoC
 
 		public static TInterface GetInstance<TInterface>()
 		{
+			return GetInstance<TInterface>(null);
+		}
+
+		public static TInterface GetInstance<TInterface>(string name)
+		{
 			var type = typeof(TInterface);
 			ConfigurationCollection configuration;
 			if (!Configuration.TryGetValue(type, out configuration))
 			{
-				throw new ConfigurationErrorsException(string.Format("No instance of {0} has been configured.", type.FullName));
+				throw new ConfigurationErrorsException(String.Format("No instance of {0} has been configured.", type.FullName));
 			}
 
-			var info = configuration.Get();
+			var info = name != null ? configuration.Get(name) : configuration.Get();
 			if (info.Instance != null)
 			{
 				return (TInterface)info.Instance;

@@ -65,7 +65,6 @@ namespace gar3t.LucidIoC.Tests
 		[TestFixture]
 		public class When_asked_to_configure_a_type
 		{
-			private Action _configure;
 			private Type _expectedType;
 
 			[Test]
@@ -74,7 +73,8 @@ namespace gar3t.LucidIoC.Tests
 				Test.Static()
 					.When(asked_to_configure_a_type)
 					.With(a_type_that_has_already_been_configured)
-					.Should(replace_the_existing_configuration)
+					.Should(store_the_requested_configuration)
+					.Should(still_contain_the_other_configuration)
 					.Verify();
 			}
 
@@ -90,26 +90,24 @@ namespace gar3t.LucidIoC.Tests
 
 			private void a_type_that_has_already_been_configured()
 			{
-				LeafIoC.Configure<IComparable, Int32>();
-				_configure = () => LeafIoC.Configure<IComparable, decimal>();
-				_expectedType = typeof(decimal);
+				LeafIoC.Configure<IComparable, decimal>().Named("Decimal");
 			}
 
 			private void a_type_that_has_not_been_configured()
 			{
-				_configure = () => LeafIoC.Configure<IComparable, Int32>();
-				_expectedType = typeof(Int32);
+				LeafIoC.Reset();
 			}
 
 			private void asked_to_configure_a_type()
 			{
-				_configure();
+				LeafIoC.Configure<IComparable, Int32>();
+				_expectedType = typeof(Int32);
 			}
 
-			private void replace_the_existing_configuration()
+			private void still_contain_the_other_configuration()
 			{
-				var result = LeafIoC.GetInstance<IComparable>();
-				result.GetType().ShouldBeEqualTo(_expectedType);
+				var result = LeafIoC.GetInstance<IComparable>("Decimal");
+				result.GetType().ShouldBeEqualTo(typeof(decimal));
 			}
 
 			private void store_the_requested_configuration()
@@ -119,21 +117,58 @@ namespace gar3t.LucidIoC.Tests
 			}
 		}
 
-//[TestFixture]
-//public class When_asked_to_get_a_named_object_instance
-//{
-//	[Test]
-//	public void Given_a_name_that_has_been_configured()
-//	{
-//		Test.Static()
-//			.When(asked_to_get_a_named_instance)
-//			.With(a_name_that_has_been_configured)
-//			.Should(get_a_non_null_instance)
-//			.Should(get_the_instance_requested)
-//			.Should(get_a_different_instance_every_time)
-//			.Verify();
-//	}
-//}
+		[TestFixture]
+		public class When_asked_to_get_a_named_object_instance
+		{
+			private Func<object> _getInstance;
+			private object _result;
+
+			[Test]
+			public void Given_a_name_that_has_been_configured()
+			{
+				Test.Static()
+					.When(asked_to_get_a_named_instance)
+					.With(a_name_that_has_been_configured)
+					.With(another_name_has_been_configured)
+					.Should(get_a_non_null_instance)
+					.Should(get_the_instance_requested)
+					.Should(get_a_different_instance_every_time)
+					.Verify();
+			}
+
+			private void a_name_that_has_been_configured()
+			{
+				LeafIoC.Configure<IComparable, Int32>().Named("Int");
+				_getInstance = () => LeafIoC.GetInstance<IComparable>("Int");
+			}
+
+			private static void another_name_has_been_configured()
+			{
+				LeafIoC.Configure<IComparable, Decimal>().Named("Decimal");
+			}
+
+			private void asked_to_get_a_named_instance()
+			{
+				_result = _getInstance();
+			}
+
+			private void get_a_different_instance_every_time()
+			{
+				_result.ShouldNotBeNull();
+				var other = _getInstance();
+				_result.ShouldNotBeSameInstanceAs(other);
+			}
+
+			private void get_a_non_null_instance()
+			{
+				_result.ShouldNotBeNull();
+			}
+
+			private void get_the_instance_requested()
+			{
+				_result.GetType().ShouldBeEqualTo(typeof(int));
+			}
+		}
 
 		[TestFixture]
 		public class When_asked_to_get_an_object_instance

@@ -14,5 +14,11 @@
 			_resolutionInfo.IsSingleton = true;
 			return this;
 		}
+
+		public ResolutionContext Named(string name)
+		{
+			_resolutionInfo.Name = name;
+			return this;
+		}
 	}
 }

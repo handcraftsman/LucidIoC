@@ -1,3 +1,5 @@
+using System;
+
 using FluentAssert;
 
 using NUnit.Framework;
@@ -21,15 +23,21 @@ namespace gar3t.LucidIoC.Tests
 			[Test]
 			public void Given_nothing_has_been_configured()
 			{
-				Test.Static()
+				Test.Given(_collection)
 					.When(asked_if_a_configuration_exists)
 					.With(nothing_configured)
 					.Should(return_false)
 					.Verify();
 			}
 
-			private void an_unnamed_instance_configured()
+			[Test]
+			public void Given_something_has_been_configured()
 			{
+				Test.Given(_collection)
+					.When(asked_if_a_configuration_exists)
+					.With(something_configured)
+					.Should(return_true)
+					.Verify();
 			}
 
 			private void asked_if_a_configuration_exists()
@@ -37,7 +45,7 @@ namespace gar3t.LucidIoC.Tests
 				_result = _collection.HasConfiguration();
 			}
 
-			private void nothing_configured()
+			private static void nothing_configured()
 			{
 			}
 
@@ -46,15 +54,15 @@ namespace gar3t.LucidIoC.Tests
 				_result.ShouldBeFalse();
 			}
 
-//	[Test]
-//	public void Given_nothing_has_been_configured()
-//	{
-//		Test.Static()
-//			.When(asked_if_an_instance_is_configured)
-//			.With(an_unnamed_instance_configured)
-//			.Should(return_true)
-//			.Verify();
-//	}
+			private void return_true()
+			{
+				_result.ShouldBeTrue();
+			}
+
+			private void something_configured()
+			{
+				_collection.Store(new ResolutionInfo());
+			}
 		}
 
 		[TestFixture]
@@ -124,10 +132,11 @@ namespace gar3t.LucidIoC.Tests
 		}
 
 		[TestFixture]
-		public class When_asked_to_get_an_unnamed_configuration
+		public class When_asked_to_get_a_named_configuration
 		{
 			private ConfigurationCollection _collection;
 			private ResolutionInfo _configuration;
+			private string _name;
 			private ResolutionInfo _result;
 
 			[SetUp]
@@ -137,37 +146,46 @@ namespace gar3t.LucidIoC.Tests
 			}
 
 			[Test]
-			public void Given_an_unnamed_configuration_exists()
+			public void Given_a_matching_named_configuration_exists()
 			{
-				Test.Static()
-					.When(asked_to_get_a_configuration)
-					.With(an_existing_unnamed_configuration)
+				Test.Given(_collection)
+					.When(asked_to_get_a_named_configuration)
+					.With(a_specific_name)
+					.With(an_existing_configuration_with_the_requested_name)
 					.Should(get_the_requested_configuration)
 					.Verify();
 			}
 
-			private void an_existing_unnamed_configuration()
+			private void a_specific_name()
+			{
+				_name = "Foo";
+			}
+
+			private void an_existing_configuration_with_the_requested_name()
 			{
 				_configuration = new ResolutionInfo();
+				new ResolutionContext(_configuration).Named(_name);
 				_collection.Store(_configuration);
 			}
 
-			private void asked_to_get_a_configuration()
+			private void asked_to_get_a_named_configuration()
 			{
-				_result = _collection.Get();
+				_result = _collection.Get(_name);
 			}
 
 			private void get_the_requested_configuration()
 			{
-				ReferenceEquals(_result, _configuration).ShouldBeTrue();
+				_result.ShouldBeSameInstanceAs(_configuration);
 			}
 		}
 
 		[TestFixture]
-		public class When_asked_to_store_a_configuration
+		public class When_asked_to_get_the_configuration
 		{
 			private ConfigurationCollection _collection;
-			private ResolutionInfo _configuration;
+			private ResolutionInfo _namedConfiguration;
+			private ResolutionInfo _result;
+			private ResolutionInfo _unnamedConfiguration;
 
 			[SetUp]
 			public void BeforeEachTest()
@@ -176,47 +194,215 @@ namespace gar3t.LucidIoC.Tests
 			}
 
 			[Test]
-			public void Given_an_unnamed_configuration()
+			public void Given_a_single_named_configuration_exists()
+			{
+				Test.Given(_collection)
+					.When(asked_to_get_the_configuration)
+					.With(an_existing_named_configuration)
+					.Should(get_the_named_configuration)
+					.Verify();
+			}
+
+			[Test]
+			public void Given_a_single_unnamed_configuration_exists()
+			{
+				Test.Given(_collection)
+					.When(asked_to_get_the_configuration)
+					.With(an_existing_unnamed_configuration)
+					.Should(get_the_unnamed_configuration)
+					.Verify();
+			}
+
+			[Test]
+			public void Given_multiple_configurations_exist_but_one_is_unnamed()
+			{
+				Test.Given(_collection)
+					.When(asked_to_get_the_configuration)
+					.With(an_existing_named_configuration)
+					.With(an_existing_unnamed_configuration)
+					.Should(get_the_unnamed_configuration)
+					.Verify();
+			}
+
+			[Test]
+			public void Given_multiple_named_configurations_exist()
+			{
+				Test.Given(_collection)
+					.When(asked_to_get_the_configuration)
+					.With(an_existing_named_configuration)
+					.With(an_existing_named_configuration)
+					.ShouldThrowException<InvalidOperationException>()
+					.Verify();
+			}
+
+			[Test]
+			public void Given_multiple_unnamed_configurations_were_stored()
+			{
+				Test.Given(_collection)
+					.When(asked_to_get_the_configuration)
+					.With(an_existing_unnamed_configuration)
+					.With(an_existing_unnamed_configuration)
+					.Should(get_the_last_stored_unnamed_configuration)
+					.Verify();
+			}
+
+			private void an_existing_named_configuration()
+			{
+				_namedConfiguration = new ResolutionInfo
+					{
+						Name = Guid.NewGuid().ToString()
+					};
+				_collection.Store(_namedConfiguration);
+			}
+
+			private void an_existing_unnamed_configuration()
+			{
+				_unnamedConfiguration = new ResolutionInfo();
+				_collection.Store(_unnamedConfiguration);
+			}
+
+			private void asked_to_get_the_configuration()
+			{
+				_result = _collection.Get();
+			}
+
+			private void get_the_last_stored_unnamed_configuration()
+			{
+				get_the_unnamed_configuration();
+			}
+
+			private void get_the_named_configuration()
+			{
+				_result.ShouldBeSameInstanceAs(_namedConfiguration);
+			}
+
+			private void get_the_unnamed_configuration()
+			{
+				_result.ShouldBeSameInstanceAs(_unnamedConfiguration);
+			}
+		}
+
+		[TestFixture]
+		public class When_asked_to_store_a_configuration
+		{
+			private ConfigurationCollection _collection;
+			private ResolutionInfo _existingConfiguration;
+			private DisposeTester _instance;
+			private ResolutionInfo _newConfiguration;
+
+			[SetUp]
+			public void BeforeEachTest()
+			{
+				_collection = new ConfigurationCollection();
+			}
+
+			[Test]
+			public void Given_a_configuration()
 			{
 				Test.Given(_collection)
 					.When(asked_to_store_a_configuration)
-					.With(an_unnamed_configuration)
+					.With(a_new_configuration)
 					.Should(store_the_configuration)
 					.Verify();
 			}
 
 			[Test]
-			public void Given_an_unnamed_configuration_and_an_unnamed_configuration_already_exists()
+			public void Given_a_configuration_and_a_configuration_already_exists()
 			{
 				Test.Given(_collection)
 					.When(asked_to_store_a_configuration)
-					.With(an_existing_unnamed_configuration)
-					.With(an_unnamed_configuration)
+					.With(an_existing_configuration)
+					.With(a_new_configuration)
 					.Should(replace_the_existing_configuration)
 					.Verify();
 			}
 
-			private void an_existing_unnamed_configuration()
+			[Test]
+			public void Given_a_configuration_and_a_configuration_with_a_disposable_instance_already_exists()
 			{
-				_collection.Store(new ResolutionInfo
-					{
-						IsSingleton = true
-					});
+				Test.Given(_collection)
+					.When(asked_to_store_a_configuration)
+					.With(an_existing_configuration)
+					.With(an_existing_disposable_instance)
+					.With(a_new_configuration)
+					.Should(dispose_of_the_existing_instance)
+					.Verify();
 			}
 
-			private void an_unnamed_configuration()
+			[Test]
+			public void Given_a_named_configuration_and_a_differently_named_configuration_already_exists()
 			{
-				_configuration = new ResolutionInfo();
+				Test.Given(_collection)
+					.When(asked_to_store_a_configuration)
+					.With(an_existing_named_configuration)
+					.With(a_named_configuration)
+					.Should(add_the_new_named_configuration)
+					.Should(not_remove_the_other_named_configuration)
+					.Verify();
+			}
+
+			private void a_named_configuration()
+			{
+				_newConfiguration = new ResolutionInfo
+					{
+						Name = "Bar"
+					};
+			}
+
+			private void a_new_configuration()
+			{
+				_newConfiguration = new ResolutionInfo();
+			}
+
+			private void add_the_new_named_configuration()
+			{
+				_collection.Get(_newConfiguration.Name)
+					.ShouldBeSameInstanceAs(_newConfiguration);
+			}
+
+			private void an_existing_configuration()
+			{
+				_existingConfiguration = new ResolutionInfo
+					{
+						IsSingleton = true
+					};
+				_collection.Store(_existingConfiguration);
+			}
+
+			private void an_existing_disposable_instance()
+			{
+				_instance = new DisposeTester();
+				_existingConfiguration.Instance = _instance;
+			}
+
+			private void an_existing_named_configuration()
+			{
+				_existingConfiguration = new ResolutionInfo
+					{
+						Name = "Foo"
+					};
+				_collection.Store(_existingConfiguration);
 			}
 
 			private void asked_to_store_a_configuration()
 			{
-				_collection.Store(_configuration);
+				_collection.Store(_newConfiguration);
+			}
+
+			private void dispose_of_the_existing_instance()
+			{
+				_instance.Disposed.ShouldBeTrue();
+			}
+
+			private void not_remove_the_other_named_configuration()
+			{
+				_collection.Get(_existingConfiguration.Name)
+					.ShouldBeSameInstanceAs(_existingConfiguration);
 			}
 
 			private void replace_the_existing_configuration()
 			{
-				_collection.Get().IsSingleton.ShouldBeFalse();
+				_collection.Get().ShouldBeSameInstanceAs(_newConfiguration);
 			}
 
 			private void store_the_configuration()

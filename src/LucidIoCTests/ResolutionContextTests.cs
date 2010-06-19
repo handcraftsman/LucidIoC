@@ -10,6 +10,7 @@ namespace gar3t.LucidIoC.Tests
 		public class When_asked_to_update_the_resolution_info
 		{
 			private ResolutionContext _context;
+			private string _name;
 			private ResolutionInfo _resolutionInfo;
 			private ResolutionContext _result;
 
@@ -25,9 +26,31 @@ namespace gar3t.LucidIoC.Tests
 					.Verify();
 			}
 
+			[Test]
+			public void Given_a_request_to_name_it()
+			{
+				Test.Static()
+					.When(asked_to_name_it)
+					.With(context_containing_the_resolution_info)
+					.Should(configure_the_name_of_the_resolution_info)
+					.Should(return_the_context)
+					.Verify();
+			}
+
 			private void asked_to_make_it_a_singleton()
 			{
 				_result = _context.AsSingleton();
+			}
+
+			private void asked_to_name_it()
+			{
+				_name = "Foo";
+				_result = _context.Named(_name);
+			}
+
+			private void configure_the_name_of_the_resolution_info()
+			{
+				_resolutionInfo.Name.ShouldBeEqualTo(_name);
 			}
 
 			private void configure_the_resolution_info_to_be_singleton()
