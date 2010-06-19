@@ -6,7 +6,7 @@ namespace gar3t.LucidIoC
 {
 	public class ConfigurationCollection
 	{
-		private readonly IList<ResolutionInfo> _configurations = new List<ResolutionInfo>();
+		private readonly IList<Configuration> _configurations = new List<Configuration>();
 
 		public void DisposeDisposableInstances()
 		{
@@ -16,7 +16,7 @@ namespace gar3t.LucidIoC
 			}
 		}
 
-		private static void DisposeInstance(ResolutionInfo configuration)
+		private static void DisposeInstance(Configuration configuration)
 		{
 			var instance = configuration.Instance as IDisposable;
 			configuration.Instance = null;
@@ -27,12 +27,12 @@ namespace gar3t.LucidIoC
 			instance.Dispose();
 		}
 
-		public ResolutionInfo Get()
+		public Configuration Get()
 		{
 			return _configurations.SingleOrDefault(x => x.Name == null) ?? _configurations.Single();
 		}
 
-		public ResolutionInfo Get(string name)
+		public Configuration Get(string name)
 		{
 			return _configurations.Single(x => x.Name == name);
 		}
@@ -42,7 +42,7 @@ namespace gar3t.LucidIoC
 			return _configurations.Count != 0;
 		}
 
-		public void Store(ResolutionInfo configuration)
+		public void Store(Configuration configuration)
 		{
 			var match = _configurations.FirstOrDefault(x => x.Name == configuration.Name);
 			if (match == null)

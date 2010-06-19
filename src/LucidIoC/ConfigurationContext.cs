@@ -1,23 +1,23 @@
 ﻿namespace gar3t.LucidIoC
 {
-	public class ResolutionContext
+	public class ConfigurationContext
 	{
-		private readonly ResolutionInfo _resolutionInfo;
+		private readonly Configuration _configuration;
 
-		public ResolutionContext(ResolutionInfo resolutionInfo)
+		public ConfigurationContext(Configuration configuration)
 		{
-			_resolutionInfo = resolutionInfo;
+			_configuration = configuration;
 		}
 
-		public ResolutionContext AsSingleton()
+		public ConfigurationContext AsSingleton()
 		{
-			_resolutionInfo.IsSingleton = true;
+			_configuration.IsSingleton = true;
 			return this;
 		}
 
-		public ResolutionContext Named(string name)
+		public ConfigurationContext Named(string name)
 		{
-			_resolutionInfo.Name = name;
+			_configuration.Name = name;
 			return this;
 		}
 	}

@@ -4,24 +4,24 @@ using NUnit.Framework;
 
 namespace gar3t.LucidIoC.Tests
 {
-	public class ResolutionContextTests
+	public class ConfigurationContextTests
 	{
 		[TestFixture]
-		public class When_asked_to_update_the_resolution_info
+		public class When_asked_to_update_the_configuration
 		{
-			private ResolutionContext _context;
+			private Configuration _configuration;
+			private ConfigurationContext _context;
 			private string _name;
-			private ResolutionInfo _resolutionInfo;
-			private ResolutionContext _result;
+			private ConfigurationContext _result;
 
 			[Test]
 			public void Given_a_request_to_make_it_singleton()
 			{
 				Test.Static()
 					.When(asked_to_make_it_a_singleton)
-					.With(non_singleton_resolution_info)
-					.With(context_containing_the_resolution_info)
-					.Should(configure_the_resolution_info_to_be_singleton)
+					.With(non_singleton_configuration)
+					.With(context_containing_the_configuration)
+					.Should(configure_the_configuration_to_be_singleton)
 					.Should(return_the_context)
 					.Verify();
 			}
@@ -31,8 +31,8 @@ namespace gar3t.LucidIoC.Tests
 			{
 				Test.Static()
 					.When(asked_to_name_it)
-					.With(context_containing_the_resolution_info)
-					.Should(configure_the_name_of_the_resolution_info)
+					.With(context_containing_the_configuration)
+					.Should(configure_the_name_of_the_configuration)
 					.Should(return_the_context)
 					.Verify();
 			}
@@ -48,24 +48,24 @@ namespace gar3t.LucidIoC.Tests
 				_result = _context.Named(_name);
 			}
 
-			private void configure_the_name_of_the_resolution_info()
+			private void configure_the_configuration_to_be_singleton()
 			{
-				_resolutionInfo.Name.ShouldBeEqualTo(_name);
+				_configuration.IsSingleton.ShouldBeTrue();
 			}
 
-			private void configure_the_resolution_info_to_be_singleton()
+			private void configure_the_name_of_the_configuration()
 			{
-				_resolutionInfo.IsSingleton.ShouldBeTrue();
+				_configuration.Name.ShouldBeEqualTo(_name);
 			}
 
-			private void context_containing_the_resolution_info()
+			private void context_containing_the_configuration()
 			{
-				_context = new ResolutionContext(_resolutionInfo);
+				_context = new ConfigurationContext(_configuration);
 			}
 
-			private void non_singleton_resolution_info()
+			private void non_singleton_configuration()
 			{
-				_resolutionInfo = new ResolutionInfo
+				_configuration = new Configuration
 					{
 						IsSingleton = false
 					};

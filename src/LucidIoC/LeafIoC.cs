@@ -9,22 +9,22 @@ namespace gar3t.LucidIoC
 		private static readonly Dictionary<Type, ConfigurationCollection> Configuration
 			= new Dictionary<Type, ConfigurationCollection>();
 
-		public static ResolutionContext Configure<TInterface, TImplementation>() where TImplementation : TInterface, new()
+		public static ConfigurationContext Configure<TInterface, TImplementation>() where TImplementation : TInterface, new()
 		{
 			var type = typeof(TInterface);
-			ConfigurationCollection configuration;
-			if (!Configuration.TryGetValue(type, out configuration))
+			ConfigurationCollection configurationCollection;
+			if (!Configuration.TryGetValue(type, out configurationCollection))
 			{
-				configuration = new ConfigurationCollection();
+				configurationCollection = new ConfigurationCollection();
 			}
-			var resolutionInfo = new ResolutionInfo
+			var configuration = new Configuration
 				{
 					Initializer = (Func<TInterface>)(() => new TImplementation())
 				};
-			configuration.Store(resolutionInfo);
-			Configuration[type] = configuration;
+			configurationCollection.Store(configuration);
+			Configuration[type] = configurationCollection;
 
-			return new ResolutionContext(resolutionInfo);
+			return new ConfigurationContext(configuration);
 		}
 
 		private static void DisposeDisposableInstances()

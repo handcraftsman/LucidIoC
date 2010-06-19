@@ -61,7 +61,7 @@ namespace gar3t.LucidIoC.Tests
 
 			private void something_configured()
 			{
-				_collection.Store(new ResolutionInfo());
+				_collection.Store(new Configuration());
 			}
 		}
 
@@ -111,7 +111,7 @@ namespace gar3t.LucidIoC.Tests
 			private void existing_instances_of_disposable_types()
 			{
 				_disposeTester = new DisposeTester();
-				_collection.Store(new ResolutionInfo
+				_collection.Store(new Configuration
 					{
 						Instance = _disposeTester
 					});
@@ -119,7 +119,7 @@ namespace gar3t.LucidIoC.Tests
 
 			private void existing_instances_of_non_disposable_types()
 			{
-				_collection.Store(new ResolutionInfo
+				_collection.Store(new Configuration
 					{
 						Instance = new NonDisposableTester()
 					});
@@ -135,9 +135,9 @@ namespace gar3t.LucidIoC.Tests
 		public class When_asked_to_get_a_named_configuration
 		{
 			private ConfigurationCollection _collection;
-			private ResolutionInfo _configuration;
+			private Configuration _configuration;
 			private string _name;
-			private ResolutionInfo _result;
+			private Configuration _result;
 
 			[SetUp]
 			public void BeforeEachTest()
@@ -163,8 +163,8 @@ namespace gar3t.LucidIoC.Tests
 
 			private void an_existing_configuration_with_the_requested_name()
 			{
-				_configuration = new ResolutionInfo();
-				new ResolutionContext(_configuration).Named(_name);
+				_configuration = new Configuration();
+				new ConfigurationContext(_configuration).Named(_name);
 				_collection.Store(_configuration);
 			}
 
@@ -183,9 +183,9 @@ namespace gar3t.LucidIoC.Tests
 		public class When_asked_to_get_the_configuration
 		{
 			private ConfigurationCollection _collection;
-			private ResolutionInfo _namedConfiguration;
-			private ResolutionInfo _result;
-			private ResolutionInfo _unnamedConfiguration;
+			private Configuration _namedConfiguration;
+			private Configuration _result;
+			private Configuration _unnamedConfiguration;
 
 			[SetUp]
 			public void BeforeEachTest()
@@ -248,7 +248,7 @@ namespace gar3t.LucidIoC.Tests
 
 			private void an_existing_named_configuration()
 			{
-				_namedConfiguration = new ResolutionInfo
+				_namedConfiguration = new Configuration
 					{
 						Name = Guid.NewGuid().ToString()
 					};
@@ -257,7 +257,7 @@ namespace gar3t.LucidIoC.Tests
 
 			private void an_existing_unnamed_configuration()
 			{
-				_unnamedConfiguration = new ResolutionInfo();
+				_unnamedConfiguration = new Configuration();
 				_collection.Store(_unnamedConfiguration);
 			}
 
@@ -286,9 +286,9 @@ namespace gar3t.LucidIoC.Tests
 		public class When_asked_to_store_a_configuration
 		{
 			private ConfigurationCollection _collection;
-			private ResolutionInfo _existingConfiguration;
+			private Configuration _existingConfiguration;
 			private DisposeTester _instance;
-			private ResolutionInfo _newConfiguration;
+			private Configuration _newConfiguration;
 
 			[SetUp]
 			public void BeforeEachTest()
@@ -343,7 +343,7 @@ namespace gar3t.LucidIoC.Tests
 
 			private void a_named_configuration()
 			{
-				_newConfiguration = new ResolutionInfo
+				_newConfiguration = new Configuration
 					{
 						Name = "Bar"
 					};
@@ -351,7 +351,7 @@ namespace gar3t.LucidIoC.Tests
 
 			private void a_new_configuration()
 			{
-				_newConfiguration = new ResolutionInfo();
+				_newConfiguration = new Configuration();
 			}
 
 			private void add_the_new_named_configuration()
@@ -362,7 +362,7 @@ namespace gar3t.LucidIoC.Tests
 
 			private void an_existing_configuration()
 			{
-				_existingConfiguration = new ResolutionInfo
+				_existingConfiguration = new Configuration
 					{
 						IsSingleton = true
 					};
@@ -377,7 +377,7 @@ namespace gar3t.LucidIoC.Tests
 
 			private void an_existing_named_configuration()
 			{
-				_existingConfiguration = new ResolutionInfo
+				_existingConfiguration = new Configuration
 					{
 						Name = "Foo"
 					};
