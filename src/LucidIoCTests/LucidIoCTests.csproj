@@ -55,11 +55,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigurationCollectionTests.cs" />
+    <Compile Include="ConfigurationContextTests.cs" />
     <Compile Include="DisposeTester.cs" />
     <Compile Include="LeafIoCTests.cs" />
     <Compile Include="NonDisposableTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResolutionContextTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LucidIoC\LucidIoC.csproj">
