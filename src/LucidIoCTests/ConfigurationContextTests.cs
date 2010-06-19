@@ -73,7 +73,7 @@ namespace gar3t.LucidIoC.Tests
 
 			private void return_the_context()
 			{
-				ReferenceEquals(_result, _context).ShouldBeTrue();
+				_result.ShouldBeSameInstanceAs(_context);
 			}
 		}
 	}

@@ -88,12 +88,12 @@ namespace gar3t.LucidIoC.Tests
 					.Verify();
 			}
 
-			private void a_type_that_has_already_been_configured()
+			private static void a_type_that_has_already_been_configured()
 			{
 				LeafIoC.Configure<IComparable, decimal>().Named("Decimal");
 			}
 
-			private void a_type_that_has_not_been_configured()
+			private static void a_type_that_has_not_been_configured()
 			{
 				LeafIoC.Reset();
 			}
@@ -104,7 +104,7 @@ namespace gar3t.LucidIoC.Tests
 				_expectedType = typeof(Int32);
 			}
 
-			private void still_contain_the_other_configuration()
+			private static void still_contain_the_other_configuration()
 			{
 				var result = LeafIoC.GetInstance<IComparable>("Decimal");
 				result.GetType().ShouldBeEqualTo(typeof(decimal));
@@ -235,7 +235,7 @@ namespace gar3t.LucidIoC.Tests
 			{
 				_result.ShouldNotBeNull();
 				var other = _getInstance();
-				ReferenceEquals(_result, other).ShouldBeFalse();
+				_result.ShouldNotBeSameInstanceAs(other);
 			}
 
 			private void get_a_non_null_instance()
@@ -246,7 +246,7 @@ namespace gar3t.LucidIoC.Tests
 			private void get_the_same_instance_every_time()
 			{
 				var other = _getInstance();
-				ReferenceEquals(_result, other).ShouldBeTrue();
+				_result.ShouldBeSameInstanceAs(other);
 			}
 		}
 
